@@ -213,8 +213,9 @@
 !
       INTEGER :: I,IJ,J,RC,RC_USER
 !
+      REAL :: NHOURS_FCST
       INTEGER :: MYPE_GLOBAL                                            &
-                ,NHOURS_FCST                                            &
+!               ,NHOURS_FCST                                            &
                 ,NSECONDS_FCST                                          &
                 ,PE_MAX                                                 &
                 ,TASKS                                                  &

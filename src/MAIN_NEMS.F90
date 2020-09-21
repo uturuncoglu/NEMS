@@ -75,8 +75,9 @@
 !***  Local Variables.
 !-----------------------------------------------------------------------
 !
+      REAL :: NHOURS_FCST                                                  !<-- Length of forecast in hours
       INTEGER :: MYPE                                                   &  !<-- The MPI task ID
-                ,NHOURS_FCST                                            &  !<-- Length of forecast in hours
+!               ,NHOURS_FCST                                            &  !<-- Length of forecast in hours
                 ,NSECONDS_FCST                                          &  !<-- Length of forecast in seconds
                 ,TIMESTEP_SEC_WHOLE                                     &  !<-- Integer part of timestep
                 ,TIMESTEP_SEC_NUMERATOR                                 &  !<-- Numerator of fractional part
@@ -540,6 +541,7 @@
 ! ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 !
         NHOURS_FCST = HH_FINAL - HH_START
+        NSECONDS_FCST=NHOURS_FCST*3600
 !
 ! ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
         MESSAGE_CHECK="MAIN: Re-set the clock after the ensemble run cycles."
@@ -547,7 +549,7 @@
 ! ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
 !
         CALL ESMF_TimeIntervalSet(timeInterval = RUNDURATION            &
-                                 ,h            = NHOURS_FCST            &
+                                 ,s            = NSECONDS_FCST          &
                                  ,rc           = RC)
         ESMF_ERR_ABORT(RC)
 !
