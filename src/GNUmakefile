@@ -78,6 +78,10 @@ ifneq (,$(findstring CMEPS,$(COMPONENTS)))
 CPPFLAGS += -DCMEPS
 endif
 
+ifneq (,$(findstring CDEPS,$(COMPONENTS)))
+CPPFLAGS += -DCDEPS
+endif
+
 TARGET = ../exe/NEMS.x
 
 ifneq (,$(findstring MACOSX,$(CPPDEFS)))
