@@ -88,8 +88,8 @@ clean_CDEPS:
 	cp -n $(MODULE_DIR)/$(CHOSEN_MODULE) $(CONFDIR)/modules.nems ; \
 	$(MODULE_LOGIC); export $(CDEPS_ALL_OPTS); \
 	set -e; \
-	cd $(CDEPS_BLDDIR); \
-	exec $(MAKE) clean
+	if [ -d "~/Dropbox" ]; then cd $(CDEPS_BLDDIR); \
+	exec $(MAKE) clean; fi
 
 distclean_CDEPS: clean_CDEPS
 	rm -rf $(CDEPS_BINDIR)
