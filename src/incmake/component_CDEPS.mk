@@ -2,6 +2,9 @@
 cdeps_mk = $(CDEPS_BINDIR)/cdeps.mk
 all_component_mk_files+=$(cdeps_mk)
 
+# Need this because cmeps_mk is not available at this level
+cmeps_mk = $(ROOTDIR)/CMEPS_INSTALL/cmeps.mk 
+
 # Location of source code and installation
 CDEPS_SRCDIR?=$(ROOTDIR)/CDEPS
 CDEPS_BLDDIR?=$(ROOTDIR)/CDEPS/CDEPS_BUILD
@@ -17,8 +20,7 @@ endif
 include $(CONFIGURE_NEMS_FILE)
 
 # Rule for building this component:
-#build_CDEPS: $(cdeps_mk)
-build_CDEPS: all 
+build_CDEPS: $(cdeps_mk) 
 
 CDEPS_ALL_OPTS=\
   COMP_SRCDIR="$(CDEPS_SRCDIR)" \
@@ -28,30 +30,21 @@ CDEPS_ALL_OPTS=\
   CC="$(CC)" \
   CXX="$(CXX)"
 
-#PIO_PATH?=$(ROOTDIR)/CMEPS/nems/lib/ParallelIO/install
-PIO_PATH?=/work/noaa/nems/tufuk/progs/pio-2.5.2/install
+# Use CMEPS PIO build
+PIO_PATH?=$(ROOTDIR)/CMEPS/nems/lib/ParallelIO/install
 
-# Rule for creating ESMF build dependency makefile fragment
-all:
-	rm -f $(CDEPS_BINDIR)/cdeps.mk
-	@echo "# ESMF self-describing build dependency makefile fragment" > $(CDEPS_BINDIR)/cdeps.mk
-	@echo "# src location: $(CDEPS_SRCDIR)" >> $(CDEPS_BINDIR)/cdeps.mk
-	@echo  >> $(CDEPS_BINDIR)/cdeps.mk
-	@echo "ESMF_DEP_FRONT     = MED" >> $(CDEPS_BINDIR)/cdeps.mk
-	@echo "ESMF_DEP_INCPATH   = $(CDEPS_BINDIR)/include" >> $(CDEPS_BINDIR)/cdeps.mk
-	@echo "ESMF_DEP_CMPL_OBJS = " >> $(CDEPS_BINDIR)/cdeps.mk
-	@echo "ESMF_DEP_LINK_OBJS = $(CDEPS_BINDIR)/lib/libdshr.a $(CDEPS_BINDIR)/lib/libstreams.a \
-	$(CDEPS_BINDIR)/lib/libdatm.a $(CDEPS_BINDIR)/lib/libdocn.a \
-	$(PIO_PATH)/lib/libpioc.a $(PIO_PATH)/lib/libpiof.a" >> $(CDEPS_BINDIR)/cdeps.mk
-
-$(cdeps_mk): configure
+# Rule for building CDEPS using cmake build system, depends on CMEPS for PIO
+$(cdeps_mk): $(cmeps_mk) configure
 	$(MODULE_LOGIC); export $(CDEPS_ALL_OPTS); \
 	set -e; $(MODULE_LOGIC); mkdir -p $(CDEPS_BLDDIR); \
 	cd $(CDEPS_BLDDIR); \
         exec cmake -DCMAKE_BUILD_TYPE=Release \
 	-DBLD_STANDALONE=ON \
 	-DCMAKE_INSTALL_PREFIX=$(CDEPS_BINDIR) \
-        -DPIO_Fortran_LIBRARY=$(PIO_PATH)/lib \
+	-DCMAKE_Fortran_COMPILER=$(FC) \
+	-DCMAKE_C_COMPILER=$(CC) \
+	-DCMAKE_CXX_COMPILER=$(CXX) \
+	-DPIO_Fortran_LIBRARY=$(PIO_PATH)/lib \
 	-DPIO_Fortran_INCLUDE_DIR=$(PIO_PATH)/include \
 	-DPIO_C_LIBRARY=$(PIO_PATH)/lib \
 	-DPIO_C_INCLUDE_DIR=$(PIO_PATH)/include ../
@@ -61,12 +54,31 @@ $(cdeps_mk): configure
 	exec $(MAKE) -j 1  $(CDEPS_ALL_OPTS) install VERBOSE=1
 	
 	$(MODULE_LOGIC); export $(CDEPS_ALL_OPTS); \
-	set -e; \
-	exec cp $(CDEPS_BLDDIR)/datm/libdatm.a $(CDEPS_BINDIR)/lib/libdatm.a
+	set -e; $(MODULE_LOGIC) ; cd $(CDEPS_BLDDIR); \
+	exec find ./d??? -name "*.a" -exec cp {} ../CDEPS_INSTALL/lib/ \;
 	
 	$(MODULE_LOGIC); export $(CDEPS_ALL_OPTS); \
-	set -e; \
-	exec cp $(CDEPS_BLDDIR)/docn/libdocn.a $(CDEPS_BINDIR)/lib/libdocn.a
+        set -e; $(MODULE_LOGIC) ; cd $(CDEPS_BLDDIR); \
+        exec find ./fox/lib -name "*.a" -exec cp {} ../CDEPS_INSTALL/lib/ \;
+	
+	$(MODULE_LOGIC); export $(CDEPS_ALL_OPTS); \
+        set -e; $(MODULE_LOGIC) ; cd $(CDEPS_BLDDIR); \
+	exec find share/ -name "*.a" -exec cp {} ../CDEPS_INSTALL/lib/ \;
+	
+	$(MODULE_LOGIC); export $(CDEPS_ALL_OPTS); \
+        set -e; $(MODULE_LOGIC) ; cd $(CDEPS_BLDDIR); \
+        exec find ./d??? -name "*_comp_nuopc.mod" -exec cp {} ../CDEPS_INSTALL/include/ \;
+	
+	rm -f $(CDEPS_BINDIR)/cdeps.mk
+	$(eval CDEPS_LIBS := $(shell find $(CDEPS_BINDIR)/lib -name "libd*.a" -print | grep -v "dshr" | tr "\n" " "))
+	$(eval FOX_LIBS := $(shell find $(CDEPS_BINDIR)/lib -name "*FoX*.a" -print | tr "\n" " "))
+	@echo "# ESMF self-describing build dependency makefile fragment" > $(CDEPS_BINDIR)/cdeps.mk
+	@echo "# src location: $(CDEPS_SRCDIR)" >> $(CDEPS_BINDIR)/cdeps.mk
+	@echo  >> $(CDEPS_BINDIR)/cdeps.mk
+	@echo "ESMF_DEP_FRONT     = atm_comp_nuopc" >> $(CDEPS_BINDIR)/cdeps.mk
+	@echo "ESMF_DEP_INCPATH   = $(CDEPS_BINDIR)/include" >> $(CDEPS_BINDIR)/cdeps.mk
+	@echo "ESMF_DEP_CMPL_OBJS = " >> $(CDEPS_BINDIR)/cdeps.mk
+	@echo "ESMF_DEP_LINK_OBJS = -L$(CDEPS_BINDIR)/lib -ldatm -ldshr -lstreams -lcdeps_share -lFoX_dom -lFoX_sax -lFoX_common -lFoX_utils -lFoX_fsys -L$(PIO_PATH)/lib -lpiof -lpioc" >> $(CDEPS_BINDIR)/cdeps.mk
 	
 	test -d "$(CDEPS_BINDIR)"
 	test -s "$(cdeps_mk)"

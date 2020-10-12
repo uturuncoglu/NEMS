@@ -24,7 +24,8 @@ CMEPS_ALL_OPTS=\
   MACHINE_ID="$(MACHINE_ID)" \
   FC="$(FC)" \
   CC="$(CC)" \
-  CXX="$(CXX)"
+  CXX="$(CXX)" \
+  INTERNAL_PIO_INIT=0
 
 $(cmeps_mk): configure
 	$(MODULE_LOGIC) ; export $(CMEPS_ALL_OPTS)         ; \
