@@ -3,7 +3,7 @@ cdeps_mk = $(CDEPS_BINDIR)/cdeps.mk
 all_component_mk_files+=$(cdeps_mk)
 
 # Need this because cmeps_mk is not available at this level
-cmeps_mk = $(ROOTDIR)/CMEPS_INSTALL/cmeps.mk 
+cmeps_mk = $(ROOTDIR)/CMEPS/CMEPS_INSTALL/cmeps.mk 
 
 # Location of source code and installation
 CDEPS_SRCDIR?=$(ROOTDIR)/CDEPS
@@ -70,15 +70,13 @@ $(cdeps_mk): $(cmeps_mk) configure
         exec find ./d??? -name "*_comp_nuopc.mod" -exec cp {} ../CDEPS_INSTALL/include/ \;
 	
 	rm -f $(CDEPS_BINDIR)/cdeps.mk
-	$(eval CDEPS_LIBS := $(shell find $(CDEPS_BINDIR)/lib -name "libd*.a" -print | grep -v "dshr" | tr "\n" " "))
-	$(eval FOX_LIBS := $(shell find $(CDEPS_BINDIR)/lib -name "*FoX*.a" -print | tr "\n" " "))
 	@echo "# ESMF self-describing build dependency makefile fragment" > $(CDEPS_BINDIR)/cdeps.mk
 	@echo "# src location: $(CDEPS_SRCDIR)" >> $(CDEPS_BINDIR)/cdeps.mk
 	@echo  >> $(CDEPS_BINDIR)/cdeps.mk
-	@echo "ESMF_DEP_FRONT     = atm_comp_nuopc" >> $(CDEPS_BINDIR)/cdeps.mk
+	@echo "ESMF_DEP_FRONT     = " >> $(CDEPS_BINDIR)/cdeps.mk
 	@echo "ESMF_DEP_INCPATH   = $(CDEPS_BINDIR)/include" >> $(CDEPS_BINDIR)/cdeps.mk
 	@echo "ESMF_DEP_CMPL_OBJS = " >> $(CDEPS_BINDIR)/cdeps.mk
-	@echo "ESMF_DEP_LINK_OBJS = -L$(CDEPS_BINDIR)/lib -ldatm -ldshr -lstreams -lcdeps_share -lFoX_dom -lFoX_sax -lFoX_common -lFoX_utils -lFoX_fsys -L$(PIO_PATH)/lib -lpiof -lpioc" >> $(CDEPS_BINDIR)/cdeps.mk
+	@echo "ESMF_DEP_LINK_OBJS = -L$(CDEPS_BINDIR)/lib -ldshr -lstreams -lcdeps_share -lFoX_dom -lFoX_sax -lFoX_common -lFoX_utils -lFoX_fsys -L$(PIO_PATH)/lib -lpiof -lpioc" >> $(CDEPS_BINDIR)/cdeps.mk
 	
 	test -d "$(CDEPS_BINDIR)"
 	test -s "$(cdeps_mk)"

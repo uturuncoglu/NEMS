@@ -71,9 +71,6 @@
 #ifdef FRONT_DATM
       use FRONT_DATM,       only: DATM_SS  => SetServices
 #endif
-#ifdef FRONT_CDEPS 
-      use FRONT_CDEPS,      only: DATM_SS  => SetServices
-#endif
   ! - Handle build time OCN options:
 #ifdef FRONT_SOCN
       use FRONT_SOCN,       only: SOCN_SS   => SetServices
@@ -92,6 +89,9 @@
 #endif
 #ifdef FRONT_POM
       use FRONT_POM,        only: POM_SS    => SetServices
+#endif
+#ifdef FRONT_DOCN 
+      use FRONT_DOCN,       only: DOCN_SS  => SetServices
 #endif
   ! - Handle build time ICE options:
 #ifdef FRONT_SICE
@@ -3624,7 +3624,7 @@
             return  ! bail out
 #endif
           elseif (trim(model) == "datm") then
-#if defined FRONT_DATM || defined CDEPS
+#if defined FRONT_DATM
             call NUOPC_DriverAddComp(driver, trim(prefix), DATM_SS, &
               petList=petList, comp=comp, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
@@ -3704,6 +3704,19 @@
           elseif (trim(model) == "pom") then
 #ifdef FRONT_POM
             call NUOPC_DriverAddComp(driver, trim(prefix), POM_SS, &
+              petList=petList, comp=comp, rc=rc)
+            if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+              line=__LINE__, file=trim(name)//":"//__FILE__)) return  ! bail out
+#else
+            write (msg, *) "Model '", trim(model), "' was requested, "// &
+              "but is not available in the executable!"
+            call ESMF_LogSetError(ESMF_RC_NOT_VALID, msg=msg, line=__LINE__, &
+              file=__FILE__, rcToReturn=rc)
+            return  ! bail out
+#endif
+          elseif (trim(model) == "docn") then
+#if defined FRONT_DOCN
+            call NUOPC_DriverAddComp(driver, trim(prefix), DOCN_SS, &
               petList=petList, comp=comp, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
               line=__LINE__, file=trim(name)//":"//__FILE__)) return  ! bail out
