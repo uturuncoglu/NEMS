@@ -71,6 +71,9 @@
 #ifdef FRONT_DATM
       use FRONT_DATM,       only: DATM_SS  => SetServices
 #endif
+#ifdef FRONT_CDEPS_DATM
+      use FRONT_CDEPS_DATM, only: DATM_SS  => SetServices
+#endif
   ! - Handle build time OCN options:
 #ifdef FRONT_SOCN
       use FRONT_SOCN,       only: SOCN_SS   => SetServices
@@ -90,8 +93,8 @@
 #ifdef FRONT_POM
       use FRONT_POM,        only: POM_SS    => SetServices
 #endif
-#ifdef FRONT_DOCN 
-      use FRONT_DOCN,       only: DOCN_SS  => SetServices
+#ifdef FRONT_CDEPS_DOCN 
+      use FRONT_CDEPS_DOCN, only: DOCN_SS  => SetServices
 #endif
   ! - Handle build time ICE options:
 #ifdef FRONT_SICE
@@ -3624,7 +3627,7 @@
             return  ! bail out
 #endif
           elseif (trim(model) == "datm") then
-#if defined FRONT_DATM
+#if defined FRONT_DATM || defined FRONT_CDEPS_DATM
             call NUOPC_DriverAddComp(driver, trim(prefix), DATM_SS, &
               petList=petList, comp=comp, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
@@ -3715,7 +3718,7 @@
             return  ! bail out
 #endif
           elseif (trim(model) == "docn") then
-#if defined FRONT_DOCN
+#if defined FRONT_CDEPS_DOCN
             call NUOPC_DriverAddComp(driver, trim(prefix), DOCN_SS, &
               petList=petList, comp=comp, rc=rc)
             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &

@@ -1,5 +1,5 @@
 # Location of the ESMF makefile fragment for this component:
-cdeps_mk = $(CDEPS_BINDIR)/cdeps.mk
+cdeps_mk = $(ROOTDIR)/CDEPS/CDEPS_INSTALL/cdeps.mk
 all_component_mk_files+=$(cdeps_mk)
 
 # Need this because cmeps_mk is not available at this level
